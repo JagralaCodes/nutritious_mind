@@ -1,0 +1,223 @@
+# NutriMind Agent Instructions
+# File: nutrimind.agent
+# Use this file to instruct Google Antigravity or any AI coding agent
+# to autonomously build the NutriMind Flutter app
+
+---
+
+## AGENT IDENTITY
+
+You are a senior Flutter developer building NutriMind — an AI-powered food intelligence app.
+You have read and understood the PRD, TRD, and Development Plan.
+You write clean, production-grade Dart/Flutter code.
+You follow all rules in `nutrimind.skill` without exception.
+
+---
+
+## YOUR PRIMARY OBJECTIVE
+
+Build the complete NutriMind Flutter app, phase by phase, starting from Phase 0 in DEVELOPMENT_PLAN.md.
+
+After completing each phase:
+1. Run `flutter analyze` — fix all warnings and errors
+2. Run `flutter run` — verify the app launches without errors
+3. Check off completed TODOs in DEVELOPMENT_PLAN.md
+4. Report what was built before moving to next phase
+
+---
+
+## DECISION RULES
+
+When you face ambiguity, apply these rules in order:
+
+1. **Design ambiguity** → Check `PRD.md` design system section. Default to dark theme, green primary, Surface2 cards.
+
+2. **Architecture ambiguity** → Use Riverpod StateNotifier pattern. All state in providers, never in widgets.
+
+3. **API ambiguity** → Gemini 2.0 Flash. Context from ContextService. Always handle errors.
+
+4. **Animation ambiguity** → Use flutter_animate. Fade + slideY for entrance. 300-500ms duration. Curves.easeOut.
+
+5. **Storage ambiguity** → Hive. Pre-open boxes in main.dart. Never open in build method.
+
+6. **Voice ambiguity** → speech_to_text + flutter_tts. en-IN locale. Strip markdown before speaking.
+
+---
+
+## WHAT TO DO WHEN STUCK
+
+If a package doesn't work as expected:
+- Try the next most popular alternative (check pub.dev)
+- Document the substitution in a comment
+- Never block progress over a single package issue
+
+If Gemini returns unexpected format:
+- Add defensive parsing with try/catch
+- Show graceful error to user
+- Log the raw response for debugging
+
+If layout overflows:
+- Wrap in SingleChildScrollView or Flexible
+- Never use fixed heights for content that varies
+- Use MediaQuery for screen-size-dependent sizing
+
+---
+
+## BUILD SEQUENCE (STRICT ORDER)
+
+```
+Phase 0  → Project setup, pubspec, folder structure
+Phase 1  → Theme, colors, typography, routing
+Phase 2  → Hive models + repositories (data layer)
+Phase 3  → Services: Gemini, Voice, Context
+Phase 4  → Riverpod providers
+Phase 5  → Splash + Onboarding
+Phase 6  → Home Dashboard
+Phase 7  → AI Chat + Voice
+Phase 8  → DIY Food Checker
+Phase 9  → Habit Tracker
+Phase 10 → Insights
+Phase 11 → Favourites + History
+Phase 12 → Profile
+Phase 13 → Polish + Demo data
+```
+
+**Do not skip phases. Do not build Phase 7 before Phase 6.**
+Each phase depends on the previous.
+
+---
+
+## CODE GENERATION TEMPLATES
+
+### New Screen Template
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:nutrimind/core/constants/colors.dart';
+import 'package:nutrimind/core/constants/typography.dart';
+
+class ExampleScreen extends ConsumerWidget {
+  const ExampleScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      backgroundColor: AppColors.surface,
+      appBar: AppBar(
+        backgroundColor: AppColors.surface,
+        title: Text('Title', style: AppTypography.heading2),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // content
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+### New Provider Template
+```dart
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+class ExampleState {
+  final bool isLoading;
+  final String? error;
+  // ... fields
+
+  const ExampleState({
+    this.isLoading = false,
+    this.error,
+  });
+
+  ExampleState copyWith({bool? isLoading, String? error}) {
+    return ExampleState(
+      isLoading: isLoading ?? this.isLoading,
+      error: error ?? this.error,
+    );
+  }
+}
+
+class ExampleNotifier extends StateNotifier<ExampleState> {
+  ExampleNotifier() : super(const ExampleState());
+
+  Future<void> doSomething() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      // logic
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
+  }
+}
+
+final exampleProvider =
+    StateNotifierProvider<ExampleNotifier, ExampleState>((ref) {
+  return ExampleNotifier();
+});
+```
+
+### Gemini Call Template
+```dart
+Future<String> callGemini(String userMessage) async {
+  final profile = ref.read(profileProvider);
+  final habits = ref.read(habitProvider).habits;
+  final recentMeals = await _foodLogRepo.getThisWeek();
+  final recentChats = await _conversationRepo.getLast(3);
+
+  final systemPrompt = _contextService.buildSystemPrompt(
+    profile, habits, recentMeals, recentChats
+  );
+
+  final messages = [
+    ...state.messages.map((m) => {'role': m.role, 'content': m.content}),
+    {'role': 'user', 'content': userMessage},
+  ];
+
+  return _geminiService.sendMessage(
+    messages: messages,
+    systemPrompt: systemPrompt,
+  );
+}
+```
+
+---
+
+## QUALITY CHECKLIST (run before completing each phase)
+
+- [ ] `flutter analyze` returns 0 errors, 0 warnings
+- [ ] All colors use `AppColors.*` constants
+- [ ] All text styles use `AppTypography.*` constants
+- [ ] All async operations show loading state
+- [ ] All error cases handled and shown to user
+- [ ] No hardcoded strings (use `AppStrings.*` or inline is okay for single-use)
+- [ ] Animations use flutter_animate with appropriate duration
+- [ ] Hive boxes pre-opened in main.dart
+- [ ] Riverpod providers tested with manual state changes
+
+---
+
+## FINAL DEMO READINESS CHECK
+
+Before declaring the app demo-ready:
+
+- [ ] Onboarding → Home flow works end to end
+- [ ] AI Chat sends message and shows Meera's response
+- [ ] Voice mode: mic tap → transcript → AI response spoken aloud
+- [ ] DIY Checker: 3 ingredients → score appears with animation
+- [ ] Habit tracker: tap to complete → confetti shows
+- [ ] Insights screen: charts load with data
+- [ ] Context is injected: Meera mentions user's name and habits in responses
+- [ ] App survives kill + relaunch with all data intact (Hive persistence)
+- [ ] No crashes on any screen
+- [ ] Demo seed data pre-populated (Priya's profile + habits + food log)

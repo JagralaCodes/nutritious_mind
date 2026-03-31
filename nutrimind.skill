@@ -1,0 +1,189 @@
+# NutriMind Flutter Skill
+# Version: 1.0
+# Use this skill when building the NutriMind app in Google Antigravity or Claude Code
+
+---
+
+## SKILL IDENTITY
+
+name: nutrimind-flutter
+description: Build the NutriMind AI food intelligence Flutter app
+stack: Flutter 3.x, Dart, Gemini 2.0 Flash, Hive, Riverpod 2.x
+platform: Android + iOS
+
+---
+
+## CONTEXT FILES TO READ FIRST
+
+Before writing any code, read these files in this order:
+1. `PRD.md` — Product requirements, features, design system
+2. `TRD.md` — Technical stack, file structure, code patterns, Hive models
+3. `DEVELOPMENT_PLAN.md` — Phase-by-phase TODOs
+
+---
+
+## CODING STANDARDS
+
+### Dart / Flutter Rules
+- All files use `lowerCamelCase` for variables, `UpperCamelCase` for classes
+- All screens are `ConsumerWidget` or `ConsumerStatefulWidget` (Riverpod)
+- All async operations use `AsyncValue` — handle loading/error/data states
+- Never use `setState` directly — always use Riverpod notifiers
+- Always add `const` constructors where possible
+- Use named parameters for all widget constructors with more than 2 params
+- All colors from `AppColors` constants — never hardcode hex values
+- All text styles from `AppTypography` constants — never hardcode fontSize
+
+### File Naming
+- screens: `home_screen.dart`, `chat_screen.dart`
+- widgets: `habit_card.dart`, `message_bubble.dart`
+- providers: `chat_provider.dart`
+- models: `habit.dart`, `user_profile.dart`
+- services: `gemini_service.dart`
+
+### Import Order (enforce this order)
+```dart
+// 1. Dart SDK
+import 'dart:async';
+// 2. Flutter
+import 'package:flutter/material.dart';
+// 3. Third-party packages
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+// 4. Local imports
+import 'package:nutrimind/core/constants/colors.dart';
+```
+
+---
+
+## DESIGN RULES (NEVER VIOLATE)
+
+- Background: ALWAYS `AppColors.surface` (#0A0A0A) — never white
+- Primary action color: ALWAYS `AppColors.primary` (#1DB954 green)
+- Cards: ALWAYS `AppColors.surface2` (#1A1A1A) with `borderRadius: 16`
+- Padding: Use multiples of 8 — `8, 12, 16, 20, 24`
+- No shadows — use subtle borders (`Color(0x20FFFFFF)`) for card separation
+- All buttons: height 52, borderRadius 12, Poppins SemiBold 16
+- Bottom nav: `NavigationBar` widget with `indicatorColor: AppColors.primary`
+
+---
+
+## ANIMATION RULES
+
+Always use `flutter_animate` for:
+- Screen elements entering: `.animate().fadeIn(duration: 400.ms).slideY(begin: 0.3)`
+- Staggered lists: add `.delay(n * 100.ms)` per item
+- Score circles: `Tween` animation from 0 to value, 800ms, Curves.easeOutCubic
+- Button presses: scale 0.95 on tap
+
+Never animate:
+- Text content changes (just update directly)
+- Loading states (use shimmer instead)
+
+---
+
+## GEMINI API RULES
+
+- Model: ALWAYS `gemini-2.0-flash` — never use Pro in this app (too slow)
+- Max tokens: 800 for chat, 600 for DIY checker, 200 for tips/summaries
+- Temperature: 0.7 for chat, 0.3 for analysis (more deterministic)
+- Always include system prompt with full user context
+- Always handle errors: show snackbar, log error, don't crash
+- DIY Checker response MUST start with `SCORE:XX` — parse this first
+- Chat responses should NOT start with "I" — Meera speaks warmly, not formally
+
+---
+
+## HIVE RULES
+
+- Open all boxes in `main.dart` before `runApp()`
+- Never call `Hive.openBox` in widget build — always pre-open
+- Use `box.get(key, defaultValue: ...)` — never assume key exists
+- Always run `build_runner` after model changes: `flutter pub run build_runner build --delete-conflicting-outputs`
+- Box names as constants in a `HiveBoxNames` class
+
+---
+
+## VOICE RULES
+
+- Always request microphone permission before first STT use
+- Show visual feedback IMMEDIATELY when mic is tapped (don't wait for permission)
+- Speaking: strip all markdown (`*`, `_`, `#`, `` ` ``) before passing to TTS
+- Language: always `en-IN` for both STT and TTS
+- Stop TTS on new user message (don't overlap)
+- Voice mode state persists across the chat session but resets on app restart
+
+---
+
+## CONTEXT ENGINE RULES
+
+The context string injected into every Gemini call must include:
+1. User name, age, city, dietary preference, allergies, health goal
+2. Active habits with current streak count
+3. Last 5 meals from food_log (name + date)
+4. Summary of last conversation
+5. Today's habit completion count
+
+Rebuild context on every API call — never cache it (data changes frequently)
+Keep context string under 800 tokens — truncate older meals/conversations if needed
+
+---
+
+## ERROR HANDLING PATTERNS
+
+```dart
+// Standard async pattern for all Gemini calls
+Future<void> sendMessage(String text) async {
+  state = state.copyWith(isLoading: true);
+  try {
+    final response = await _geminiService.sendMessage(...);
+    // handle success
+  } on DioException catch (e) {
+    _showError('Connection error. Check your internet.');
+  } catch (e) {
+    _showError('Something went wrong. Try again.');
+  } finally {
+    state = state.copyWith(isLoading: false);
+  }
+}
+```
+
+---
+
+## WHAT NOT TO BUILD
+
+- No authentication / login screens
+- No server-side API calls except Gemini
+- No camera / photo scanning (not in scope)
+- No push notifications (too complex for demo)
+- No social features
+- No payment screens
+- No calorie counting (qualitative only, not quantitative)
+- No external nutrition database API calls
+
+---
+
+## DEMO DATA TO PRE-POPULATE
+
+On first launch after onboarding, seed this demo data:
+
+```dart
+// User: Priya, 26, Ahmedabad, Vegetarian, Goal: Lose weight
+
+// Habits (with fake completion history for streaks):
+habits = [
+  Habit(title: 'Eat breakfast daily', icon: '🌅', category: 'eating'),
+  Habit(title: 'Drink 8 glasses of water', icon: '💧', category: 'hydration'),
+  Habit(title: 'No sugar after 8pm', icon: '🚫', category: 'timing'),
+  Habit(title: 'Eat 2 fruits daily', icon: '🍎', category: 'eating'),
+  Habit(title: '10 min mindful eating', icon: '🧘', category: 'mindfulness'),
+]
+
+// Food log entries (last 5 days):
+entries = [
+  FoodLogEntry(mealName: 'Poha with peanuts', healthScore: 82, ...),
+  FoodLogEntry(mealName: 'Dal rice + ghee', healthScore: 74, ...),
+  FoodLogEntry(mealName: 'Vada Pav', healthScore: 42, ...),
+  FoodLogEntry(mealName: 'Oats upma', healthScore: 88, ...),
+  FoodLogEntry(mealName: 'Chole bhature', healthScore: 51, ...),
+]
+```

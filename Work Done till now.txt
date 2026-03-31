@@ -1,0 +1,47 @@
+I've read all the context files. Let me check the      
+  current state of the project before planning.
+
+  Read 3 files (ctrl+o to expand)
+
+● Fresh Flutter project — only the default counter app   
+  exists. I've thoroughly reviewed all 5 context files.  
+  Here's my plan:
+
+  Implementation Plan — NutriMind
+
+  Phase 0 — Project setup: pubspec.yaml, folder
+  structure, .env, assets
+  Phase 1 — Core: colors, typography, theme, routing     
+  (GoRouter)
+  Phase 2 — Hive data layer: models, adapters,
+  repositories
+  Phase 3 — Services: Gemini, Voice, Context
+  Phase 4 — Riverpod providers
+  Phase 5 — Splash + Onboarding (minimalist, modern)     
+  Phase 6 — Home Dashboard
+  Phase 7 — AI Chat + Voice
+  Phase 8 — DIY Food Checker
+  Phase 9 — Habit Tracker
+  Phase 10 — Insights
+  Phase 11 — Favourites + History
+  Phase 12 — Profile
+  Phase 13 — Polish + Demo data
+
+  Each phase will be fully completed and verified before 
+  moving to the next. I'll use a minimalist dark UI with 
+  the green accent (#1DB954), clean spacing, and smooth  
+  animations.
+
+  Let me start with Phase 0 + Phase 1 (project setup +   
+  core foundation).
+
+
+  Slingshot/nutritious_mind" && flutter analyze 2>&1)  ⎿  Running…                   
+                         
+  14 tasks (1 done, 1 in progress, 12 open)
+  ◼ Phase 1 — Core, Theme & Constants
+  ◻ Phase 2 — Hive Data Layer  
+  ◻ Phase 3 — Services          
+  ◻ Phase 4 — GetX Controllers   
+  ◻ Phase 5 — Splash & Onboarding
+  ◻ Phase 6 — Home Dashboard
